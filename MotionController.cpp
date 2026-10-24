@@ -17,20 +17,20 @@ void MotionController::begin() {
 
 void MotionController::attachPwm() {
 #if ESP_ARDUINO_VERSION_MAJOR >= 3
-  const bool azAttached = ledcAttach(Config::PIN_SERVO_AZIMUTH,
+  const bool topAttached = ledcAttach(Config::PIN_SERVO_TOP,
                                      Config::SERVO_PWM_HZ,
                                      Config::SERVO_PWM_BITS);
-  const bool elAttached = ledcAttach(Config::PIN_SERVO_ELEVATION,
+  const bool bottomAttached = ledcAttach(Config::PIN_SERVO_BOTTOM,
                                      Config::SERVO_PWM_HZ,
                                      Config::SERVO_PWM_BITS);
-  if (!azAttached || !elAttached) Serial.println("ERROR: servo LEDC attach failed");
+  if (!topAttached || !bottomAttached) Serial.println("ERROR: servo LEDC attach failed");
 #else
-  ledcSetup(Config::SERVO_AZ_CHANNEL, Config::SERVO_PWM_HZ,
+  ledcSetup(Config::SERVO_TOP_CHANNEL, Config::SERVO_PWM_HZ,
             Config::SERVO_PWM_BITS);
-  ledcSetup(Config::SERVO_EL_CHANNEL, Config::SERVO_PWM_HZ,
+  ledcSetup(Config::SERVO_BOTTOM_CHANNEL, Config::SERVO_PWM_HZ,
             Config::SERVO_PWM_BITS);
-  ledcAttachPin(Config::PIN_SERVO_AZIMUTH, Config::SERVO_AZ_CHANNEL);
-  ledcAttachPin(Config::PIN_SERVO_ELEVATION, Config::SERVO_EL_CHANNEL);
+  ledcAttachPin(Config::PIN_SERVO_TOP, Config::SERVO_TOP_CHANNEL);
+  ledcAttachPin(Config::PIN_SERVO_BOTTOM, Config::SERVO_BOTTOM_CHANNEL);
 #endif
 }
 
@@ -76,10 +76,10 @@ void MotionController::moveToward(float azimuthTarget, float elevationTarget) {
 }
 
 void MotionController::writeAngles() {
-  writeServo(Config::PIN_SERVO_AZIMUTH, Config::SERVO_AZ_CHANNEL,
-             azimuthDeg_, Config::SERVO_AZ_MIN_US, Config::SERVO_AZ_MAX_US,
-             Config::SERVO_AZ_REVERSED);
-  writeServo(Config::PIN_SERVO_ELEVATION, Config::SERVO_EL_CHANNEL,
-             elevationDeg_, Config::SERVO_EL_MIN_US, Config::SERVO_EL_MAX_US,
-             Config::SERVO_EL_REVERSED);
+  writeServo(Config::PIN_SERVO_TOP, Config::SERVO_TOP_CHANNEL,
+             azimuthDeg_, Config::SERVO_TOP_MIN_US, Config::SERVO_TOP_MAX_US,
+             Config::SERVO_TOP_REVERSED);
+  writeServo(Config::PIN_SERVO_BOTTOM, Config::SERVO_BOTTOM_CHANNEL,
+             elevationDeg_, Config::SERVO_BOTTOM_MIN_US,
+             Config::SERVO_BOTTOM_MAX_US, Config::SERVO_BOTTOM_REVERSED);
 }

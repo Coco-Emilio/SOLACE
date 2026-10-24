@@ -11,12 +11,13 @@
 namespace Config {
 
 constexpr uint8_t LDR_COUNT = 6;
-// Direct ADC1 inputs: T1, T2, B1, B2, L1, R1. ADC1 remains usable with Wi-Fi.
+// Direct ADC1 inputs: T1, T2, B1, B2, L1, R1. B1/B2 are nearest the hinge;
+// T1/T2 are on the free edge. ADC1 remains usable with Wi-Fi.
 constexpr uint8_t PIN_LDR_ADC[LDR_COUNT] = {32, 33, 34, 35, 36, 39};
 constexpr uint8_t PIN_I2C_SDA = 21;
 constexpr uint8_t PIN_I2C_SCL = 22;
-constexpr uint8_t PIN_SERVO_AZIMUTH = 18;
-constexpr uint8_t PIN_SERVO_ELEVATION = 19;
+constexpr uint8_t PIN_SERVO_TOP = 18;    // Physical top servo; drives azimuth.
+constexpr uint8_t PIN_SERVO_BOTTOM = 19; // Physical bottom servo; drives elevation.
 constexpr uint8_t PIN_TEMP_DIGITAL = 13;  // e.g. KY-028 DO
 constexpr uint8_t PIN_COOLING = 23;       // MOSFET/driver input
 
@@ -24,14 +25,14 @@ constexpr uint8_t PIN_COOLING = 23;       // MOSFET/driver input
 // 1000-2000 us and widen only after testing each unloaded servo. Clone limits vary.
 constexpr uint32_t SERVO_PWM_HZ = 50;
 constexpr uint8_t SERVO_PWM_BITS = 16;
-constexpr uint8_t SERVO_AZ_CHANNEL = 0; // Used by Arduino-ESP32 core 2.x.
-constexpr uint8_t SERVO_EL_CHANNEL = 1;
-constexpr uint16_t SERVO_AZ_MIN_US = 1000;
-constexpr uint16_t SERVO_AZ_MAX_US = 2000;
-constexpr uint16_t SERVO_EL_MIN_US = 1000;
-constexpr uint16_t SERVO_EL_MAX_US = 2000;
-constexpr bool SERVO_AZ_REVERSED = false;
-constexpr bool SERVO_EL_REVERSED = false;
+constexpr uint8_t SERVO_TOP_CHANNEL = 0; // Used by Arduino-ESP32 core 2.x.
+constexpr uint8_t SERVO_BOTTOM_CHANNEL = 1;
+constexpr uint16_t SERVO_TOP_MIN_US = 1000;
+constexpr uint16_t SERVO_TOP_MAX_US = 2000;
+constexpr uint16_t SERVO_BOTTOM_MIN_US = 1000;
+constexpr uint16_t SERVO_BOTTOM_MAX_US = 2000;
+constexpr bool SERVO_TOP_REVERSED = false;
+constexpr bool SERVO_BOTTOM_REVERSED = false;
 
 // Select the sensor actually installed. HC-SR04 is the default bench-demo
 // option. Its 5 V ECHO signal requires a divider/level shifter before GPIO17.

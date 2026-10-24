@@ -63,6 +63,13 @@ deliberately conservative because Arduino-kit SG90-compatible servos vary.
 Pulse endpoints and mechanical angle limits solve different problems: pulse
 endpoints characterize the servo; angle limits protect the assembled linkage.
 
+Physical servo pinout:
+
+| Servo | ESP32 pin | Logical axis |
+| --- | --- | --- |
+| Top servo | GPIO18 | Azimuth |
+| Bottom servo | GPIO19 | Elevation |
+
 ## Before connecting hardware
 
 1. Select an ESP32-WROOM development-board target in Arduino IDE and verify every
@@ -92,6 +99,9 @@ dividers and connect their midpoint nodes as follows:
 | B2 | GPIO35 |
 | L1 | GPIO36 / VP |
 | R1 | GPIO39 / VN |
+
+`B1` and `B2` are the hinge-side sensors. `T1` and `T2` are mounted on the
+opposite free edge of the panel.
 
 The firmware averages T1/T2 and B1/B2 for elevation tracking. L1 and R1 provide
 the azimuth error. GPIO34, GPIO35, GPIO36, and GPIO39 are input-only, which is
