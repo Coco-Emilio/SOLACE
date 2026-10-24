@@ -158,3 +158,90 @@ Do not place a meter in current mode directly across the solar panel; that is a
 short circuit. Do not use open-circuit voltage alone as an energy measurement.
 For a defensible comparison, use the same load, lamp geometry, sampling interval,
 and trial duration for fixed and tracking runs.
+
+# SOLACE — Solar-Powered Adaptive Shading System
+
+SOLACE is a prototype solar-powered adaptive shading system developed for HackIoT. It combines embedded control, light sensing, occupancy detection, and geometric optimization to balance shading performance and solar energy collection.
+
+## Project Goals
+
+- **Occupancy-aware shading:** Prioritize shading a designated ground area when a person is detected.
+- **Solar tracking:** Prioritize solar alignment when the target area does not need to be shaded.
+- **Safety-aware control:** Support fault handling and wind/rain stow states.
+- **Environmental monitoring:** Monitor ambient light, occupancy, and temperature.
+
+## System Overview
+
+**Microcontroller:** ESP32-WROOM
+
+**Key components:**
+- Six LDR sensors for relative light measurements
+- Occupancy detection using an ultrasonic sensor
+- Temperature monitoring
+- Dual-axis servo control
+- Network communication and remote operating modes
+- Geometric shading optimization
+
+## Shading Optimization
+
+The `ShadeOptimizer` module searches candidate panel orientations to maximize coverage of a fixed rectangular ground target.
+
+The current optimization strategy is:
+
+1. Search candidate panel azimuth and elevation angles.
+2. Project the panel onto the ground using the estimated sun direction.
+3. Calculate the overlap between the projected panel and the target region.
+4. If a candidate achieves at least 70% target coverage, select the candidate with the highest direct-sun alignment proxy.
+5. If no candidate reaches 70% coverage, prioritize maximum target coverage.
+
+The current geometric model uses a panel size of 11.5 × 6.5 cm and a target region of 11.5 × 6.5 cm. The rotation pivot height is currently set to 15 cm.
+
+## Control Logic
+
+The system prioritizes operating states in the following order:
+
+1. Fault, wind protection, and rain protection
+2. Occupancy-aware shading
+3. Low-light handling when the target area is unoccupied
+4. Solar tracking or aligned-position holding
+
+## Current Development Status
+
+- [x] Implement the `ShadeOptimizer` interface and geometric search algorithm.
+- [x] Integrate occupancy-priority logic into state selection.
+- [ ] Validate geometric projection and coverage calculations.
+- [ ] Calibrate the rotation-pivot offset and servo angle conventions.
+- [ ] Connect a validated sun-direction estimate to the optimizer.
+- [ ] Verify servo motion and measured ground coverage.
+- [ ] Test the complete occupancy-aware control workflow.
+
+**Current stage:** Prototype implementation and validation.
+
+The optimizer currently uses test sun-direction inputs during initial integration. The geometric model, mechanical offsets, and servo-angle mapping still require validation before the optimization results can safely control the physical mechanism.
+
+## Repository Structure
+
+```text
+SOLACE/
+├── SOLACE.ino
+├── ShadeOptimizer.h
+├── ShadeOptimizer.cpp
+├── LdrArray.h
+├── LdrArray.cpp
+└── ...
+```
+
+The tree above highlights the main files; additional modules handle motion control, occupancy sensing, temperature monitoring, networking, configuration, and system state definitions.
+
+## Technologies
+
+- C++
+- Arduino framework
+- ESP32
+- Embedded sensing and control
+- Computational geometry
+- Optimization
+
+## Project Context
+
+Developed for HackIoT, SOLACE explores how embedded systems and geometric optimization can support adaptive shading while balancing human comfort and solar energy collection.
