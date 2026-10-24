@@ -8,6 +8,7 @@
 #include "OccupancySensor.h"
 #include "SystemTypes.h"
 #include "TemperatureMonitor.h"
+#include "ShadeOptimizer.h"
 
 LdrArray ldrArray;
 MotionController motion;
@@ -15,6 +16,7 @@ OccupancySensor occupancy;
 TemperatureMonitor temperature;
 NetworkManager network;
 NodeStatus node;
+ShadeOptimizer shadeOptimizer;
 
 uint32_t lastTrackMs = 0;
 uint32_t lastSerialMs = 0;
