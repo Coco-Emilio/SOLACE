@@ -8,6 +8,7 @@
 #include "OccupancySensor.h"
 #include "SystemTypes.h"
 #include "TemperatureMonitor.h"
+#include "ShadeOptimizer.h"
 
 LdrArray ldrArray;
 MotionController motion;
@@ -15,6 +16,7 @@ OccupancySensor occupancy;
 TemperatureMonitor temperature;
 NetworkManager network;
 NodeStatus node;
+ShadeOptimizer shadeOptimizer;
 
 uint32_t lastTrackMs = 0;
 uint32_t lastSerialMs = 0;
@@ -25,20 +27,27 @@ static void setCooling(bool enabled) {
   digitalWrite(Config::PIN_COOLING, level ? HIGH : LOW);
 }
 
+
 static SystemState chooseState(RemoteMode remoteMode) {
   if (remoteMode == RemoteMode::FAULT) return SystemState::FAULT;
   if (remoteMode == RemoteMode::WIND) return SystemState::STOW_WIND;
   if (remoteMode == RemoteMode::RAIN) return SystemState::STOW_RAIN;
-  if (node.light.average < Config::LDR_LOW_LIGHT_THRESHOLD) return SystemState::LOW_LIGHT;
-  // Occupancy changes the objective from maximum electrical collection to a
-  // mechanically calibrated pose that shades the fixed passenger zone.
+
+  // Occupancy takes priority over low-light handling.
   if (node.occupied) return SystemState::SHADE;
+
+  if (node.light.average < Config::LDR_LOW_LIGHT_THRESHOLD) {
+    return SystemState::LOW_LIGHT;
+  }
+
   if (fabsf(node.light.azimuthError) <= Config::TRACKING_DEADBAND &&
       fabsf(node.light.elevationError) <= Config::TRACKING_DEADBAND) {
     return SystemState::ALIGNED;
   }
+
   return SystemState::TRACKING;
 }
+
 
 static void printTelemetry() {
   Serial.printf("state=%s occ=%d dist=%umm hot=%d cool=%d az=%.1f el=%.1f "
@@ -101,9 +110,48 @@ void loop() {
       case SystemState::STOW_RAIN:
         motion.moveToward(Config::RAIN_STOW_AZ_DEG, Config::RAIN_STOW_EL_DEG);
         break;
-      case SystemState::SHADE:
-        motion.moveToward(Config::SHADE_AZ_DEG, Config::SHADE_EL_DEG);
-        break;
+ 
+      case SystemState::SHADE: {
+  // Test values only; not a real sun-position estimate.
+        const float testSunAzimuthDeg = 35.0f;
+        const float testSunElevationDeg = 35.0f;
+
+  // Height from ground to the rotation pivot.
+        const float pivotHeightCm = 15.0f;
+
+  // Temporary offsets. Calibrate these from the actual mechanism.
+        const float offsetUcm = 0.0f;
+        const float offsetVcm = 0.0f;
+        const float offsetNcm = 0.0f;
+
+      ShadeResult shade = shadeOptimizer.optimize(
+      testSunAzimuthDeg,
+      testSunElevationDeg,
+      pivotHeightCm,
+      offsetUcm,
+      offsetVcm,
+      offsetNcm
+  );
+
+  if (shade.valid) {
+    Serial.printf(
+        "SHADE_OPT az=%.1f el=%.1f coverage=%.1f%% "
+        "targetMet=%d powerProxy=%.3f\n",
+        shade.azimuthDeg,
+        shade.elevationDeg,
+        shade.coverage * 100.0f,
+        shade.coverageTargetMet,
+        shade.powerProxy
+    );
+  } else {
+    Serial.println("SHADE_OPT: no valid solution");
+  }
+
+  // Do not drive the servos during this initial test.
+  break;
+}
+// testing code for the shade, not final ver.
+      
       case SystemState::LOW_LIGHT:
       case SystemState::ALIGNED:
       case SystemState::FAULT:
